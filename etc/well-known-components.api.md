@@ -7,12 +7,6 @@
 import type * as fetch_2 from 'node-fetch';
 import type * as stream from 'stream';
 
-// @public (undocumented)
-export type ExtendedRequestInfo<Query extends object = Record<string, string | string[]>, Params extends object = Record<string, string>> = fetch_2.Request & {
-    query: Query;
-    params: Params;
-};
-
 // @beta (undocumented)
 export type FallbackFunction = (name: string, context: RolloutContext) => boolean;
 
@@ -67,29 +61,45 @@ export type ILoggerComponent = {
     getLogger(name: string): ILogger;
 };
 
-// @public (undocumented)
-export type IRequestHandler<T = any> = (req: ExtendedRequestInfo) => Promise<IResponse<T>>;
-
-// Warning: (ae-forgotten-export) The symbol "JsonResponse" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "StreamResponse" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
-export type IResponse<T> = JsonResponse | StreamResponse;
-
 // @beta (undocumented)
 export type IRolloutComponent = {
     isEnabled(name: string, context: RolloutContext, fallbackFunction?: FallbackFunction): boolean;
     getVariant(name: string, context: RolloutContext, fallbackVariant?: Variant): Variant;
 };
 
-// @public (undocumented)
+// @alpha (undocumented)
+export namespace IServerComponent {
+    // (undocumented)
+    export interface ExtendedRequestInfo<Query extends object = Record<string, string | string[]>, Params extends object = Record<string, string>> extends fetch_2.Request {
+        // (undocumented)
+        params: Params;
+        // (undocumented)
+        query: Query;
+    }
+    // (undocumented)
+    export type IRequestHandler<T = any> = (req: ExtendedRequestInfo) => Promise<IResponse<T>>;
+    // (undocumented)
+    export type IResponse<T> = JsonResponse | StreamResponse;
+    // (undocumented)
+    export type JsonBody = Record<string, any>;
+    // (undocumented)
+    export type JsonResponse = ResponseInit & {
+        body: JsonBody;
+    };
+    // (undocumented)
+    export type StreamResponse = ResponseInit & {
+        body: stream.Readable;
+    };
+}
+
+// @alpha (undocumented)
 export type IServerComponent = {
     start: () => Promise<any>;
     stop: () => Promise<any>;
-    get: (path: string, handler: IRequestHandler) => void;
-    post: (path: string, handler: IRequestHandler) => void;
-    put: (path: string, handler: IRequestHandler) => void;
-    delete: (path: string, handler: IRequestHandler) => void;
+    get: (path: string, handler: IServerComponent.IRequestHandler) => void;
+    post: (path: string, handler: IServerComponent.IRequestHandler) => void;
+    put: (path: string, handler: IServerComponent.IRequestHandler) => void;
+    delete: (path: string, handler: IServerComponent.IRequestHandler) => void;
 };
 
 // @public (undocumented)
@@ -97,9 +107,6 @@ export interface ISlackComponent {
     // (undocumented)
     sendMessage(markdown: string): Promise<void>;
 }
-
-// @public (undocumented)
-export type JsonBody = Record<string, any>;
 
 // @public (undocumented)
 export namespace lifecycle {
