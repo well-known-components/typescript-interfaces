@@ -7,9 +7,6 @@
 import type * as fetch_2 from 'node-fetch';
 import type * as stream from 'stream';
 
-// @beta (undocumented)
-export type FallbackFunction = (name: string, context: RolloutContext) => boolean;
-
 // @public (undocumented)
 export interface ICacheComponent {
     // (undocumented)
@@ -19,21 +16,15 @@ export interface ICacheComponent {
 }
 
 // @public (undocumented)
-export interface IConfigComponent<T = Record<string, any>> {
+export interface IConfigComponent {
     // (undocumented)
-    getNumber(name: keyof T | string): Promise<number | undefined>;
+    getNumber(name: string): Promise<number | undefined>;
     // (undocumented)
-    getString(name: keyof T | string): Promise<string | undefined>;
+    getString(name: string): Promise<string | undefined>;
     // (undocumented)
-    requireNumber(name: keyof T | string): Promise<number>;
+    requireNumber(name: string): Promise<number>;
     // (undocumented)
-    requireString(name: keyof T | string): Promise<string>;
-}
-
-// @public (undocumented)
-export interface IDatabase {
-    // (undocumented)
-    query<T>(sql: string): Promise<IDatabase.IQueryResult<T>>;
+    requireString(name: string): Promise<string>;
 }
 
 // @public (undocumented)
@@ -48,23 +39,86 @@ export namespace IDatabase {
 }
 
 // @public (undocumented)
-export type ILogger = {
-    log(message: string, extra?: Record<string, string | number>): void;
-    error(error: string | Error): void;
-    debug(message: string, extra?: Record<string, string | number>): void;
-    info(message: string, extra?: Record<string, string | number>): void;
-    warn(message: string, extra?: Record<string, string | number>): void;
-};
+export interface IDatabase {
+    // (undocumented)
+    query<T>(sql: string): Promise<IDatabase.IQueryResult<T>>;
+}
+
+// @public (undocumented)
+export namespace ILoggerComponent {
+    // (undocumented)
+    export type ILogger = {
+        log(message: string, extra?: Record<string, string | number>): void;
+        error(error: string | Error): void;
+        debug(message: string, extra?: Record<string, string | number>): void;
+        info(message: string, extra?: Record<string, string | number>): void;
+        warn(message: string, extra?: Record<string, string | number>): void;
+    };
+}
 
 // @public (undocumented)
 export type ILoggerComponent = {
-    getLogger(name: string): ILogger;
+    getLogger(name: string): ILoggerComponent.ILogger;
 };
 
 // @beta (undocumented)
+export namespace IRolloutComponent {
+    // (undocumented)
+    export type FallbackFunction = (name: string, context: RolloutContext) => boolean;
+    // (undocumented)
+    export interface Override {
+        // (undocumented)
+        contextName: string;
+        // (undocumented)
+        values: String[];
+    }
+    // (undocumented)
+    export interface Payload {
+        // (undocumented)
+        type: PayloadType;
+        // (undocumented)
+        value: string;
+    }
+    // (undocumented)
+    export enum PayloadType {
+        // (undocumented)
+        STRING = "string"
+    }
+    // (undocumented)
+    export type RolloutContext = {
+        userId?: string;
+        sessionId?: string;
+        remoteAddress?: string;
+        environment?: string;
+        appName?: string;
+        properties?: Record<string, string | number | undefined>;
+    };
+    // (undocumented)
+    export interface Variant {
+        // (undocumented)
+        enabled: boolean;
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        payload?: Payload;
+    }
+    // (undocumented)
+    export interface VariantDefinition {
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        overrides: Override[];
+        // (undocumented)
+        payload: Payload;
+        // (undocumented)
+        weight: number;
+    }
+}
+
+// @beta (undocumented)
 export type IRolloutComponent = {
-    isEnabled(name: string, context: RolloutContext, fallbackFunction?: FallbackFunction): boolean;
-    getVariant(name: string, context: RolloutContext, fallbackVariant?: Variant): Variant;
+    isEnabled(name: string, context: IRolloutComponent.RolloutContext, fallbackFunction?: IRolloutComponent.FallbackFunction): boolean;
+    getVariant(name: string, context: IRolloutComponent.RolloutContext, fallbackVariant?: IRolloutComponent.Variant): IRolloutComponent.Variant;
 };
 
 // @alpha (undocumented)
@@ -117,60 +171,6 @@ export namespace lifecycle {
     }): Promise<{
         stop(): Promise<void>;
     }>;
-}
-
-// @beta (undocumented)
-export interface Override {
-    // (undocumented)
-    contextName: string;
-    // (undocumented)
-    values: String[];
-}
-
-// @beta (undocumented)
-export interface Payload {
-    // (undocumented)
-    type: PayloadType;
-    // (undocumented)
-    value: string;
-}
-
-// @beta (undocumented)
-export enum PayloadType {
-    // (undocumented)
-    STRING = "string"
-}
-
-// @beta (undocumented)
-export type RolloutContext = {
-    userId?: string;
-    sessionId?: string;
-    remoteAddress?: string;
-    environment?: string;
-    appName?: string;
-    properties?: Record<string, string | number | undefined>;
-};
-
-// @beta (undocumented)
-export interface Variant {
-    // (undocumented)
-    enabled: boolean;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    payload?: Payload;
-}
-
-// @beta (undocumented)
-export interface VariantDefinition {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    overrides: Override[];
-    // (undocumented)
-    payload: Payload;
-    // (undocumented)
-    weight: number;
 }
 
 
