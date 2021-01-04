@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {},
+  "private": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/well-known-components/interfaces.git"
