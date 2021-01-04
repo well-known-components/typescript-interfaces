@@ -1,5 +1,5 @@
 {
-  "name": "well-known-components",
+  "name": "@well-known-components/interfaces",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -7,19 +7,19 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/well-known-components/well-known-components.git"
+    "url": "git+https://github.com/well-known-components/interfaces.git"
   },
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/well-known-components/well-known-components/issues"
+    "url": "https://github.com/well-known-components/interfaces/issues"
   },
   "prettier": {
     "printWidth": 120,
     "semi": false
   },
-  "homepage": "https://github.com/well-known-components/well-known-components#readme",
+  "homepage": "https://github.com/well-known-components/interfaces#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.12.1",
     "typescript": "^4.1.3"
