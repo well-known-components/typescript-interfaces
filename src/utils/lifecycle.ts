@@ -1,8 +1,10 @@
-function stopAllComponents(components: Record<string, { stop: () => any } | any>) {
+import { IBaseComponent } from "../components/base-component"
+
+function stopAllComponents(components: Record<string, IBaseComponent>) {
   const pending: PromiseLike<any>[] = []
   for (let c in components) {
     const component = components[c]
-    if ("stop" in component) {
+    if (component.stop) {
       pending.push(component.stop())
     }
   }
@@ -10,7 +12,7 @@ function stopAllComponents(components: Record<string, { stop: () => any } | any>
 }
 
 // gracefully finalizes all the components on SIGTERM
-function bindStopService(components: Record<string, { stop: () => any } | any>) {
+function bindStopService(components: Record<string, IBaseComponent>) {
   process.on("SIGTERM", () => {
     process.stdout.write("<<< SIGTERM received >>>\n")
     stopAllComponents(components)
@@ -23,19 +25,41 @@ function bindStopService(components: Record<string, { stop: () => any } | any>) 
 }
 
 // gracefully finalizes all the components on SIGTERM
-async function startComponentsLifecycle(components: Record<string, { start: () => any } | any>): Promise<void> {
+async function startComponentsLifecycle(components: Record<string, IBaseComponent>): Promise<void> {
   const pending: PromiseLike<any>[] = []
+
+  let mutStarted = false
+  let mutLive = false
+
+  const immutableStartOptions: IBaseComponent.ComponentStartOptions = {
+    started() {
+      return mutStarted
+    },
+    live() {
+      return mutLive
+    },
+    getComponents() {
+      return components
+    },
+  }
 
   for (let c in components) {
     const component = components[c]
-    if ("start" in component) {
-      const awaitable = component.start()
+    if (component.start) {
+      const awaitable = component.start(immutableStartOptions)
       if (awaitable && typeof awaitable == "object" && "then" in awaitable) {
         pending.push(awaitable)
-        awaitable.catch(() => void 0)
+        if (awaitable.catch) {
+          // avoid unhanled catch error messages in node.
+          // real catch happens below in `Promise.all(pending)`
+          awaitable.catch(() => void 0)
+        }
       }
     }
   }
+
+  // application started
+  mutLive = true
 
   bindStopService(components)
 
@@ -47,6 +71,9 @@ async function startComponentsLifecycle(components: Record<string, { start: () =
 
   try {
     await Promise.all(pending)
+
+    // all components started
+    mutStarted = true
   } catch (e) {
     console.error(e)
     process.stderr.write("<<< Error initializing components. Stopping components and closing application. >>>\n")
@@ -55,24 +82,48 @@ async function startComponentsLifecycle(components: Record<string, { start: () =
   }
 }
 
-// handles an async function, if it fails the program exits with exit code 1
-function awaitable<T>(fn: () => Promise<T>): Promise<T> {
+/**
+ * handles an async function, if it fails the program exits with exit code 1
+ */
+function asyncTopLevelExceptionHanler<T>(fn: () => Promise<T>): Promise<T> {
   return fn().catch((error) => {
+    // print error and stacktrace
     console.error(error)
+    // exit program with error
     process.exit(1)
   })
 }
 
 /**
+ * This namespace handles the basic lifecycle of the components.
  * @public
  */
 export namespace lifecycle {
-  export async function programEntryPoint<Components>(config: {
+  export type ComponentBasedProgram<Components> = {
+    /**
+     * async stop() finishes all the components of the service and awaits for completion
+     * it should be called to gracefully stop the program.
+     *
+     * It is automatically called on SIGTERM
+     */
+    stop(): Promise<void>
+
+    /**
+     * The components are present here only for debugging reasons. Do not use
+     * it as part of your program.
+     */
+    readonly components: Components
+  }
+
+  /**
+   * Program entry point, this should be the one and only top level
+   * expression of your program.
+   */
+  export async function programEntryPoint<Components extends Record<string, any>>(config: {
     main: (components: Components) => Promise<any>
     initComponents: () => Promise<Components>
-    // initTestComponents?: () => Promise<Components>
-  }): Promise<{ stop(): Promise<void> }> {
-    return awaitable(async () => {
+  }): Promise<ComponentBasedProgram<Components>> {
+    return asyncTopLevelExceptionHanler(async () => {
       // pick a componentInitializer
       const componentInitializer = config.initComponents
 
@@ -89,8 +140,12 @@ export namespace lifecycle {
       await startComponentsLifecycle(components)
 
       return {
+        get components() {
+          process.stderr.write("Warning: Usage of program.components is only intended for debuging reasons.\n")
+          return components
+        },
         async stop(): Promise<void> {
-          await startComponentsLifecycle(components)
+          await stopAllComponents(components)
         },
       }
     })

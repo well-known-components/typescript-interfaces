@@ -9,6 +9,7 @@ export namespace IDatabase {
 }
 
 /**
+ * Basic database interface.
  * @public
  */
 export interface IDatabase {

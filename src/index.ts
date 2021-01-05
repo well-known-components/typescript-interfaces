@@ -6,4 +6,7 @@ export * from "./components/http-server"
 export * from "./components/logger"
 export * from "./components/rollouts"
 export * from "./components/slack"
+export * from "./components/base-component"
+export * from "./components/status-checks"
+
 export { lifecycle }

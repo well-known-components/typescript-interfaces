@@ -23,6 +23,7 @@
   "homepage": "https://github.com/well-known-components/interfaces#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.12.1",
+    "typed-url-params": "^1.0.0-20210105203632.commit-6fc4309",
     "typescript": "^4.1.3"
   },
   "dependencies": {

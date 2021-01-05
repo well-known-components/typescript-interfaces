@@ -1,11 +1,10 @@
 /**
  * @public
  */
-
 export namespace ILoggerComponent {
   export type ILogger = {
     log(message: string, extra?: Record<string, string | number>): void
-    error(error: string | Error): void
+    error(error: string | Error, extra?: Record<string, string | number>): void
     debug(message: string, extra?: Record<string, string | number>): void
     info(message: string, extra?: Record<string, string | number>): void
     warn(message: string, extra?: Record<string, string | number>): void
@@ -16,5 +15,8 @@ export namespace ILoggerComponent {
  * @public
  */
 export type ILoggerComponent = {
-  getLogger(name: string): ILoggerComponent.ILogger
+  /**
+   * Gets a scoped logger
+   */
+  getLogger(loggerName: string): ILoggerComponent.ILogger
 }

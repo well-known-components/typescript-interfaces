@@ -5,13 +5,31 @@
 ```ts
 
 import type * as fetch_2 from 'node-fetch';
+import type { ParseUrlParams } from 'typed-url-params';
 import type * as stream from 'stream';
 
+// @public
+export type IAdapterHandler<Context, Message, ReturnType, MessageMetadata = void> = (context: Context, message: Message, metadata?: MessageMetadata) => Promise<ReturnType>;
+
 // @public (undocumented)
+export namespace IBaseComponent {
+    // (undocumented)
+    export type ComponentStartOptions = {
+        started(): boolean;
+        live(): boolean;
+        getComponents(): Record<string, any>;
+    };
+}
+
+// @public
+export interface IBaseComponent {
+    start?: (startOptions: IBaseComponent.ComponentStartOptions) => Promise<void>;
+    stop?: () => Promise<void>;
+}
+
+// @public
 export interface ICacheComponent {
-    // (undocumented)
     get(key: string): Promise<ArrayBuffer | null>;
-    // (undocumented)
     put(key: string, value: string | ArrayBuffer): Promise<void>;
 }
 
@@ -38,18 +56,92 @@ export namespace IDatabase {
     }
 }
 
-// @public (undocumented)
+// @public
 export interface IDatabase {
     // (undocumented)
     query<T>(sql: string): Promise<IDatabase.IQueryResult<T>>;
 }
+
+// @alpha (undocumented)
+export namespace IHttpServerComponent {
+    // @public
+    export type HTTPMethod =
+    /**
+     * The `CONNECT` method establishes a tunnel to the server identified by the
+     * target resource.
+     */
+    "CONNECT"
+    /**
+     * The `DELETE` method deletes the specified resource.
+     */
+     | "DELETE"
+    /**
+     * The `GET` method requests a representation of the specified resource.
+     * Requests using GET should only retrieve data.
+     */
+     | "GET"
+    /**
+     * The `HEAD` method asks for a response identical to that of a GET request,
+     * but without the response body.
+     */
+     | "HEAD"
+    /**
+     * The `OPTIONS` method is used to describe the communication options for the
+     * target resource.
+     */
+     | "OPTIONS"
+    /**
+     * The PATCH method is used to apply partial modifications to a resource.
+     */
+     | "PATCH"
+    /**
+     * The `POST` method is used to submit an entity to the specified resource,
+     * often causing a change in state or side effects on the server.
+     */
+     | "POST"
+    /**
+     * The `PUT` method replaces all current representations of the target
+     * resource with the request payload.
+     */
+     | "PUT"
+    /**
+     * The `TRACE` method performs a message loop-back test along the path to the
+     * target resource.
+     */
+     | "TRACE";
+    // (undocumented)
+    export type IRequestHandler<Context> = IAdapterHandler<Context, fetch_2.Request, IResponse>;
+    // (undocumented)
+    export type IResponse = JsonResponse | StreamResponse | ResponseInit;
+    // (undocumented)
+    export type JsonBody = Record<string, any>;
+    // (undocumented)
+    export type JsonResponse = ResponseInit & {
+        body: JsonBody;
+    };
+    // (undocumented)
+    export type StreamResponse = ResponseInit & {
+        body: stream.Readable;
+    };
+}
+
+// @alpha (undocumented)
+export type IHttpServerComponent = {
+    registerRoute: <Context, T extends string>(
+    context: Context,
+    method: IHttpServerComponent.HTTPMethod | Lowercase<IHttpServerComponent.HTTPMethod>,
+    path: T,
+    handler: IHttpServerComponent.IRequestHandler<Context & {
+        params: ParseUrlParams<T>;
+    }>) => void;
+};
 
 // @public (undocumented)
 export namespace ILoggerComponent {
     // (undocumented)
     export type ILogger = {
         log(message: string, extra?: Record<string, string | number>): void;
-        error(error: string | Error): void;
+        error(error: string | Error, extra?: Record<string, string | number>): void;
         debug(message: string, extra?: Record<string, string | number>): void;
         info(message: string, extra?: Record<string, string | number>): void;
         warn(message: string, extra?: Record<string, string | number>): void;
@@ -58,7 +150,7 @@ export namespace ILoggerComponent {
 
 // @public (undocumented)
 export type ILoggerComponent = {
-    getLogger(name: string): ILoggerComponent.ILogger;
+    getLogger(loggerName: string): ILoggerComponent.ILogger;
 };
 
 // @beta (undocumented)
@@ -121,56 +213,30 @@ export type IRolloutComponent = {
     getVariant(name: string, context: IRolloutComponent.RolloutContext, fallbackVariant?: IRolloutComponent.Variant): IRolloutComponent.Variant;
 };
 
-// @alpha (undocumented)
-export namespace IServerComponent {
-    // (undocumented)
-    export interface ExtendedRequestInfo<Query extends object = Record<string, string | string[]>, Params extends object = Record<string, string>> extends fetch_2.Request {
-        // (undocumented)
-        params: Params;
-        // (undocumented)
-        query: Query;
-    }
-    // (undocumented)
-    export type IRequestHandler<T = any> = (req: ExtendedRequestInfo) => Promise<IResponse<T>>;
-    // (undocumented)
-    export type IResponse<T> = JsonResponse | StreamResponse;
-    // (undocumented)
-    export type JsonBody = Record<string, any>;
-    // (undocumented)
-    export type JsonResponse = ResponseInit & {
-        body: JsonBody;
-    };
-    // (undocumented)
-    export type StreamResponse = ResponseInit & {
-        body: stream.Readable;
-    };
-}
-
-// @alpha (undocumented)
-export type IServerComponent = {
-    start: () => Promise<any>;
-    stop: () => Promise<any>;
-    get: (path: string, handler: IServerComponent.IRequestHandler) => void;
-    post: (path: string, handler: IServerComponent.IRequestHandler) => void;
-    put: (path: string, handler: IServerComponent.IRequestHandler) => void;
-    delete: (path: string, handler: IServerComponent.IRequestHandler) => void;
-};
-
 // @public (undocumented)
 export interface ISlackComponent {
     // (undocumented)
     sendMessage(markdown: string): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
+export interface IStatusCheckCapableComponent {
+    livenessProbe?(): Promise<boolean>;
+    readynessProbe?(): Promise<boolean>;
+    startupProbe?(): Promise<boolean>;
+}
+
+// @public
 export namespace lifecycle {
     // (undocumented)
-    export function programEntryPoint<Components>(config: {
+    export type ComponentBasedProgram<Components> = {
+        stop(): Promise<void>;
+        readonly components: Components;
+    };
+    export function programEntryPoint<Components extends Record<string, any>>(config: {
         main: (components: Components) => Promise<any>;
         initComponents: () => Promise<Components>;
-    }): Promise<{
-        stop(): Promise<void>;
-    }>;
+    }): Promise<ComponentBasedProgram<Components>>;
 }
 
 
