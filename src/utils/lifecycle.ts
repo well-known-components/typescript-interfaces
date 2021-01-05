@@ -65,14 +65,8 @@ async function startComponentsLifecycle(components: Record<string, IBaseComponen
 
   if (pending.length == 0) return
 
-  if ("allSettled" in Promise) {
-    await (Promise as any).allSettled(pending)
-  }
-
   try {
     await Promise.all(pending)
-
-    // all components started
     mutStarted = true
   } catch (e) {
     console.error(e)
