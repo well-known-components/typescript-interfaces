@@ -221,7 +221,6 @@ export interface ISlackComponent {
 
 // @public
 export interface IStatusCheckCapableComponent {
-    livenessProbe?(): Promise<boolean>;
     readynessProbe?(): Promise<boolean>;
     startupProbe?(): Promise<boolean>;
 }
