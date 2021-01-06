@@ -17,14 +17,14 @@ export namespace IHttpServerComponent {
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
-  export type DefaultContext<Context = {}, Path extends string = "/"> = Context & {
+  export type DefaultContext<Context = {}, Path extends string = string> = Context & {
     request: IRequest
     query: QueryParams
-    params: IHttpServerComponent.ParseUrlParams<Path>
+    params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>
   }
-  export type IRequestHandler<Context = {}, Path extends string = "/"> = IAdapterHandler<
+  export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<
     DefaultContext<Context, Path>,
-    Readonly<IResponse>
+    IResponse
   >
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
@@ -92,8 +92,8 @@ export namespace IHttpServerComponent {
      */
     | "TRACE"
 
-  export type MethodHandlers = {
-    [key in Lowercase<HTTPMethod>]: <Context, Path extends string>(
+  export interface PathAwareHandler {
+    <Context, Path extends string>(
       /**
        *  context to be passed on to the handlers
        */
@@ -106,7 +106,11 @@ export namespace IHttpServerComponent {
        * adapter code to handle the request
        */
       handler: IHttpServerComponent.IRequestHandler<Context, Path>
-    ) => void
+    ): void
+  }
+
+  export type MethodHandlers = {
+    [key in Lowercase<HTTPMethod>]: PathAwareHandler
   }
 }
 

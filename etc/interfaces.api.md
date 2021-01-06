@@ -65,10 +65,10 @@ export interface IDatabase {
 // @alpha (undocumented)
 export namespace IHttpServerComponent {
     // (undocumented)
-    export type DefaultContext<Context = {}, Path extends string = "/"> = Context & {
+    export type DefaultContext<Context = {}, Path extends string = string> = Context & {
         request: IRequest;
         query: QueryParams;
-        params: IHttpServerComponent.ParseUrlParams<Path>;
+        params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>;
     };
     // @public
     export type HTTPMethod =
@@ -118,7 +118,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context = {}, Path extends string = "/"> = IAdapterHandler<DefaultContext<Context, Path>, Readonly<IResponse>>;
+    export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<DefaultContext<Context, Path>, IResponse>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
@@ -129,13 +129,18 @@ export namespace IHttpServerComponent {
     };
     // (undocumented)
     export type MethodHandlers = {
-        [key in Lowercase<HTTPMethod>]: <Context, Path extends string>(
-        context: Context,
-        path: Path,
-        handler: IHttpServerComponent.IRequestHandler<Context, Path>) => void;
+        [key in Lowercase<HTTPMethod>]: PathAwareHandler;
     };
     // (undocumented)
     export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = ParseUrlParams<State, Memo>;
+    // (undocumented)
+    export interface PathAwareHandler {
+        // (undocumented)
+        <Context, Path extends string>(
+        context: Context,
+        path: Path,
+        handler: IHttpServerComponent.IRequestHandler<Context, Path>): void;
+    }
     // (undocumented)
     export type QueryParams = Record<string, any>;
     // (undocumented)
@@ -268,7 +273,7 @@ export namespace Middleware {
 }
 
 // @public (undocumented)
-export type Middleware<Ctx, ReturnType> = (ctx: Readonly<Ctx>, next: (newContext: Readonly<Ctx>) => Promise<ReturnType>) => Promise<ReturnType>;
+export type Middleware<Ctx, ReturnType> = (ctx: Ctx, next: () => Promise<ReturnType>) => Promise<ReturnType>;
 
 
 // (No @packageDocumentation comment for this package)

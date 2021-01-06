@@ -37,7 +37,7 @@ export namespace Middleware {
       // last called middleware #
       let index = -1
       return dispatch(0)
-      function dispatch(i: number, newContext?: Ctx): Promise<ReturnType> {
+      function dispatch(i: number): Promise<ReturnType> {
         if (i <= index) return Promise.reject(new Error("next() called multiple times"))
         index = i
         let fn = middlewares[i]
@@ -51,7 +51,7 @@ export namespace Middleware {
         }
 
         try {
-          return Promise.resolve(fn(newContext || context, dispatch.bind(null, i + 1)))
+          return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
         } catch (err) {
           return Promise.reject(err)
         }
@@ -63,7 +63,4 @@ export namespace Middleware {
 /**
  * @public
  */
-export type Middleware<Ctx, ReturnType> = (
-  ctx: Readonly<Ctx>,
-  next: (newContext: Readonly<Ctx>) => Promise<ReturnType>
-) => Promise<ReturnType>
+export type Middleware<Ctx, ReturnType> = (ctx: Ctx, next: () => Promise<ReturnType>) => Promise<ReturnType>
