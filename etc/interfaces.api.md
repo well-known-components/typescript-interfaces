@@ -264,17 +264,6 @@ export namespace Lifecycle {
     }): Promise<ComponentBasedProgram<Components>>;
 }
 
-// @public (undocumented)
-export namespace Middleware {
-    // (undocumented)
-    export function compose<Ctx, ReturnType>(...middlewares: Middleware<Ctx, ReturnType>[]): ComposedMiddleware<Ctx, ReturnType>;
-    // (undocumented)
-    export type ComposedMiddleware<Ctx, ReturnType> = (context: Ctx, handler: IAdapterHandler<Ctx, ReturnType>) => Promise<ReturnType>;
-}
-
-// @public (undocumented)
-export type Middleware<Ctx, ReturnType> = (ctx: Ctx, next: () => Promise<ReturnType>) => Promise<ReturnType>;
-
 
 // (No @packageDocumentation comment for this package)
 
