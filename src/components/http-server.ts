@@ -20,7 +20,7 @@ export namespace IHttpServerComponent {
     query: Record<string, any>
     params: Record<string, string | string[]>
   }
-  export type IRequestHandler<Context> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
+  export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
   /**
@@ -114,3 +114,10 @@ export type IHttpServerComponent = {
     handler: IHttpServerComponent.IRequestHandler<Context & { params: IHttpServerComponent.ParseUrlParams<T> }>
   ) => void
 }
+
+
+// const a: IHttpServerComponent = null!
+
+// a.registerRoute({} as unknown, 'GET', '/v1/estates/:id/map.png', async c => {
+//   c.params.id
+// })

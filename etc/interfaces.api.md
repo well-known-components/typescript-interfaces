@@ -118,7 +118,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>;
+    export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
