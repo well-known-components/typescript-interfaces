@@ -1,7 +1,7 @@
 import type * as stream from "stream"
 import type * as fetch from "node-fetch"
 import type { IAdapterHandler } from "./base-component"
-import type { ParseUrlParams } from "typed-url-params"
+import type { ParseUrlParams as _ParseUrlParams } from "typed-url-params"
 
 /**
  * @alpha
@@ -13,8 +13,15 @@ export namespace IHttpServerComponent {
   export type JsonResponse = ResponseInit & { body: JsonBody }
   export type StreamResponse = ResponseInit & { body: stream.Readable }
 
+  export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
-  export type IRequestHandler<Context> = IAdapterHandler<Context, fetch.Request, IResponse>
+  export type DefaultContext<Context = {}> = Context & {
+    request: IRequest
+    query: Record<string, any>
+    params: Record<string, string | string[]>
+  }
+  export type IRequestHandler<Context> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
+  export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
   /**
    * HTTP request methods.
@@ -104,6 +111,6 @@ export type IHttpServerComponent = {
     /**
      * adapter code to handle the request
      */
-    handler: IHttpServerComponent.IRequestHandler<Context & { params: ParseUrlParams<T> }>
+    handler: IHttpServerComponent.IRequestHandler<Context & { params: IHttpServerComponent.ParseUrlParams<T> }>
   ) => void
 }

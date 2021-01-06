@@ -92,7 +92,7 @@ function asyncTopLevelExceptionHanler<T>(fn: () => Promise<T>): Promise<T> {
  * This namespace handles the basic lifecycle of the components.
  * @public
  */
-export namespace lifecycle {
+export namespace Lifecycle {
   export type ComponentBasedProgram<Components> = {
     /**
      * async stop() finishes all the components of the service and awaits for completion

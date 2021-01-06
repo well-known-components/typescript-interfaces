@@ -38,8 +38,4 @@ export interface IBaseComponent {
  * Base interface to normalize adapters
  * @public
  */
-export type IAdapterHandler<Context, Message, ReturnType, MessageMetadata = void> = (
-  context: Context,
-  message: Message,
-  metadata?: MessageMetadata
-) => Promise<ReturnType>
+export type IAdapterHandler<Context, ReturnType> = (context: Context) => Promise<ReturnType>

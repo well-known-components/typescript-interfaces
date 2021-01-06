@@ -9,7 +9,7 @@ import type { ParseUrlParams } from 'typed-url-params';
 import type * as stream from 'stream';
 
 // @public
-export type IAdapterHandler<Context, Message, ReturnType, MessageMetadata = void> = (context: Context, message: Message, metadata?: MessageMetadata) => Promise<ReturnType>;
+export type IAdapterHandler<Context, ReturnType> = (context: Context) => Promise<ReturnType>;
 
 // @public (undocumented)
 export namespace IBaseComponent {
@@ -64,6 +64,12 @@ export interface IDatabase {
 
 // @alpha (undocumented)
 export namespace IHttpServerComponent {
+    // (undocumented)
+    export type DefaultContext<Context = {}> = Context & {
+        request: IRequest;
+        query: Record<string, any>;
+        params: Record<string, string | string[]>;
+    };
     // @public
     export type HTTPMethod =
     /**
@@ -110,7 +116,9 @@ export namespace IHttpServerComponent {
      */
      | "TRACE";
     // (undocumented)
-    export type IRequestHandler<Context> = IAdapterHandler<Context, fetch_2.Request, IResponse>;
+    export type IRequest = fetch_2.Request;
+    // (undocumented)
+    export type IRequestHandler<Context> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
@@ -119,6 +127,8 @@ export namespace IHttpServerComponent {
     export type JsonResponse = ResponseInit & {
         body: JsonBody;
     };
+    // (undocumented)
+    export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = ParseUrlParams<State, Memo>;
     // (undocumented)
     export type StreamResponse = ResponseInit & {
         body: stream.Readable;
@@ -132,7 +142,7 @@ export type IHttpServerComponent = {
     method: IHttpServerComponent.HTTPMethod | Lowercase<IHttpServerComponent.HTTPMethod>,
     path: T,
     handler: IHttpServerComponent.IRequestHandler<Context & {
-        params: ParseUrlParams<T>;
+        params: IHttpServerComponent.ParseUrlParams<T>;
     }>) => void;
 };
 
@@ -226,7 +236,7 @@ export interface IStatusCheckCapableComponent {
 }
 
 // @public
-export namespace lifecycle {
+export namespace Lifecycle {
     // (undocumented)
     export type ComponentBasedProgram<Components> = {
         stop(): Promise<void>;
@@ -237,6 +247,17 @@ export namespace lifecycle {
         initComponents: () => Promise<Components>;
     }): Promise<ComponentBasedProgram<Components>>;
 }
+
+// @public (undocumented)
+export namespace Middleware {
+    // (undocumented)
+    export function compose<Ctx, ReturnType>(...middlewares: Middleware<Ctx, ReturnType>[]): ComposedMiddleware<Ctx, ReturnType>;
+    // (undocumented)
+    export type ComposedMiddleware<Ctx, ReturnType> = (context: Ctx, handler: IAdapterHandler<Ctx, ReturnType>) => Promise<ReturnType>;
+}
+
+// @public (undocumented)
+export type Middleware<Ctx, ReturnType> = (ctx: Readonly<Ctx>, next: (newContext: Readonly<Ctx>) => Promise<ReturnType>) => Promise<ReturnType>;
 
 
 // (No @packageDocumentation comment for this package)
