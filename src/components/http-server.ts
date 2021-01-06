@@ -17,12 +17,15 @@ export namespace IHttpServerComponent {
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
-  export type DefaultContext<Context = {}> = Context & {
+  export type DefaultContext<Context = {}, Path extends string = string> = Context & {
     request: IRequest
     query: QueryParams
-    params: UrlParams
+    params: IHttpServerComponent.ParseUrlParams<Path>
   }
-  export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
+  export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<
+    DefaultContext<Context, Path>,
+    Readonly<IResponse>
+  >
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
   /**
@@ -88,37 +91,58 @@ export namespace IHttpServerComponent {
      * target resource.
      */
     | "TRACE"
+
+  export type MethodHandlers = {
+    [key in Lowercase<HTTPMethod>]: <Context, Path extends string>(
+      /**
+       *  context to be passed on to the handlers
+       */
+      context: Context,
+      /**
+       * /path/to/:bind
+       */
+      path: Path,
+      /**
+       * adapter code to handle the request
+       */
+      handler: IHttpServerComponent.IRequestHandler<Context, Path>
+    ) => void
+  }
 }
 
 /**
  * @alpha
  */
-export type IHttpServerComponent = {
+export interface IHttpServerComponent extends IHttpServerComponent.MethodHandlers {
   /**
-   * Register a route in this server
+   * Register a route
    */
-  registerRoute: <Context, T extends string>(
+  route: <Context, Path extends string>(
     /**
      *  context to be passed on to the handlers
      */
     context: Context,
     /**
-     * http method to bind to
-     */
-    method: IHttpServerComponent.HTTPMethod | Lowercase<IHttpServerComponent.HTTPMethod>,
-    /**
      * /path/to/:bind
      */
-    path: T,
+    path: Path,
     /**
      * adapter code to handle the request
      */
-    handler: IHttpServerComponent.IRequestHandler<Context & { params: IHttpServerComponent.ParseUrlParams<T> }>
+    handler: IHttpServerComponent.IRequestHandler<Context, Path>
+  ) => void
+
+  /**
+   * Register a route
+   */
+  use: <Context>(
+    /**
+     *  context to be passed on to the handlers
+     */
+    context: Context,
+    /**
+     * adapter code to handle the request
+     */
+    handler: IHttpServerComponent.IRequestHandler<Context, string>
   ) => void
 }
-
-// const a: IHttpServerComponent = null!
-
-// a.registerRoute({} as unknown, 'GET', '/v1/estates/:id/map.png', async c => {
-//   c.params.id
-// })

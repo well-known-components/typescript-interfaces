@@ -65,10 +65,10 @@ export interface IDatabase {
 // @alpha (undocumented)
 export namespace IHttpServerComponent {
     // (undocumented)
-    export type DefaultContext<Context = {}> = Context & {
+    export type DefaultContext<Context = {}, Path extends string = string> = Context & {
         request: IRequest;
         query: QueryParams;
-        params: UrlParams;
+        params: IHttpServerComponent.ParseUrlParams<Path>;
     };
     // @public
     export type HTTPMethod =
@@ -118,7 +118,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>;
+    export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<DefaultContext<Context, Path>, Readonly<IResponse>>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
@@ -126,6 +126,13 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type JsonResponse = ResponseInit & {
         body: JsonBody;
+    };
+    // (undocumented)
+    export type MethodHandlers = {
+        [key in Lowercase<HTTPMethod>]: <Context, Path extends string>(
+        context: Context,
+        path: Path,
+        handler: IHttpServerComponent.IRequestHandler<Context, Path>) => void;
     };
     // (undocumented)
     export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = ParseUrlParams<State, Memo>;
@@ -140,15 +147,15 @@ export namespace IHttpServerComponent {
 }
 
 // @alpha (undocumented)
-export type IHttpServerComponent = {
-    registerRoute: <Context, T extends string>(
+export interface IHttpServerComponent extends IHttpServerComponent.MethodHandlers {
+    route: <Context, Path extends string>(
     context: Context,
-    method: IHttpServerComponent.HTTPMethod | Lowercase<IHttpServerComponent.HTTPMethod>,
-    path: T,
-    handler: IHttpServerComponent.IRequestHandler<Context & {
-        params: IHttpServerComponent.ParseUrlParams<T>;
-    }>) => void;
-};
+    path: Path,
+    handler: IHttpServerComponent.IRequestHandler<Context, Path>) => void;
+    use: <Context>(
+    context: Context,
+    handler: IHttpServerComponent.IRequestHandler<Context, string>) => void;
+}
 
 // @public (undocumented)
 export namespace ILoggerComponent {
