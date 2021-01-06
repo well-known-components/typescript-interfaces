@@ -2,6 +2,7 @@ import type * as stream from "stream"
 import type * as fetch from "node-fetch"
 import type { IAdapterHandler } from "./base-component"
 import type { ParseUrlParams as _ParseUrlParams } from "typed-url-params"
+import type { URL } from "url"
 
 /**
  * @alpha
@@ -17,15 +18,15 @@ export namespace IHttpServerComponent {
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
-  export type DefaultContext<Context = {}, Path extends string = string> = Context & {
+  export type DefaultContext<Context = {}> = Context & {
     request: IRequest
-    query: QueryParams
+    url: URL
+    queryParameters: QueryParams
+  }
+  export type PathAwareContext<Context = {}, Path extends string = string> = Context & {
     params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>
   }
-  export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<
-    DefaultContext<Context, Path>,
-    IResponse
-  >
+  export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, IResponse>
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
   /**
@@ -92,8 +93,8 @@ export namespace IHttpServerComponent {
      */
     | "TRACE"
 
-  export interface PathAwareHandler {
-    <Context, Path extends string>(
+  export interface PathAwareHandler<Context> {
+    <Path extends string>(
       /**
        *  context to be passed on to the handlers
        */
@@ -105,37 +106,19 @@ export namespace IHttpServerComponent {
       /**
        * adapter code to handle the request
        */
-      handler: IHttpServerComponent.IRequestHandler<Context, Path>
+      handler: IHttpServerComponent.IRequestHandler<PathAwareContext<Context, Path>>
     ): void
   }
 
-  export type MethodHandlers = {
-    [key in Lowercase<HTTPMethod>]: PathAwareHandler
+  export type MethodHandlers<Context> = {
+    [key in Lowercase<HTTPMethod>]: PathAwareHandler<Context>
   }
 }
 
 /**
  * @alpha
  */
-export interface IHttpServerComponent extends IHttpServerComponent.MethodHandlers {
-  /**
-   * Register a route
-   */
-  route: <Context, Path extends string>(
-    /**
-     *  context to be passed on to the handlers
-     */
-    context: Context,
-    /**
-     * /path/to/:bind
-     */
-    path: Path,
-    /**
-     * adapter code to handle the request
-     */
-    handler: IHttpServerComponent.IRequestHandler<Context, Path>
-  ) => void
-
+export interface IHttpServerComponent {
   /**
    * Register a route
    */
@@ -147,6 +130,6 @@ export interface IHttpServerComponent extends IHttpServerComponent.MethodHandler
     /**
      * adapter code to handle the request
      */
-    handler: IHttpServerComponent.IRequestHandler<Context, string>
+    handler: IHttpServerComponent.IRequestHandler<Context>
   ) => void
 }

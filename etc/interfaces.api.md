@@ -7,6 +7,7 @@
 import type * as fetch_2 from 'node-fetch';
 import type { ParseUrlParams } from 'typed-url-params';
 import type * as stream from 'stream';
+import type { URL as URL_2 } from 'url';
 
 // @public
 export type IAdapterHandler<Context, ReturnType> = (context: Context) => Promise<ReturnType>;
@@ -65,10 +66,10 @@ export interface IDatabase {
 // @alpha (undocumented)
 export namespace IHttpServerComponent {
     // (undocumented)
-    export type DefaultContext<Context = {}, Path extends string = string> = Context & {
+    export type DefaultContext<Context = {}> = Context & {
         request: IRequest;
-        query: QueryParams;
-        params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>;
+        url: URL_2;
+        queryParameters: QueryParams;
     };
     // @public
     export type HTTPMethod =
@@ -118,7 +119,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<DefaultContext<Context, Path>, IResponse>;
+    export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, IResponse>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
@@ -128,18 +129,22 @@ export namespace IHttpServerComponent {
         body: JsonBody;
     };
     // (undocumented)
-    export type MethodHandlers = {
-        [key in Lowercase<HTTPMethod>]: PathAwareHandler;
+    export type MethodHandlers<Context> = {
+        [key in Lowercase<HTTPMethod>]: PathAwareHandler<Context>;
     };
     // (undocumented)
     export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = ParseUrlParams<State, Memo>;
     // (undocumented)
-    export interface PathAwareHandler {
+    export type PathAwareContext<Context = {}, Path extends string = string> = Context & {
+        params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>;
+    };
+    // (undocumented)
+    export interface PathAwareHandler<Context> {
         // (undocumented)
-        <Context, Path extends string>(
+        <Path extends string>(
         context: Context,
         path: Path,
-        handler: IHttpServerComponent.IRequestHandler<Context, Path>): void;
+        handler: IHttpServerComponent.IRequestHandler<PathAwareContext<Context, Path>>): void;
     }
     // (undocumented)
     export type QueryParams = Record<string, any>;
@@ -152,14 +157,10 @@ export namespace IHttpServerComponent {
 }
 
 // @alpha (undocumented)
-export interface IHttpServerComponent extends IHttpServerComponent.MethodHandlers {
-    route: <Context, Path extends string>(
-    context: Context,
-    path: Path,
-    handler: IHttpServerComponent.IRequestHandler<Context, Path>) => void;
+export interface IHttpServerComponent {
     use: <Context>(
     context: Context,
-    handler: IHttpServerComponent.IRequestHandler<Context, string>) => void;
+    handler: IHttpServerComponent.IRequestHandler<Context>) => void;
 }
 
 // @public (undocumented)
