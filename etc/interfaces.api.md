@@ -7,7 +7,7 @@
 import type * as fetch_2 from 'node-fetch';
 import type { ParseUrlParams } from 'typed-url-params';
 import type * as stream from 'stream';
-import type { URL as URL_2 } from 'url';
+import type { UrlWithParsedQuery } from 'url';
 
 // @public
 export type IAdapterHandler<Context, ReturnType> = (context: Context) => Promise<ReturnType>;
@@ -68,8 +68,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type DefaultContext<Context = {}> = Context & {
         request: IRequest;
-        url: URL_2;
-        queryParameters: QueryParams;
+        url: UrlWithParsedQuery;
     };
     // @public
     export type HTTPMethod =
@@ -156,7 +155,7 @@ export namespace IHttpServerComponent {
 }
 
 // @alpha (undocumented)
-export interface IHttpServerComponent<Context> {
+export interface IHttpServerComponent<Context extends object> {
     setContext(ctx: Context): void;
     use: (
     handler: IHttpServerComponent.IRequestHandler<Context>) => void;
