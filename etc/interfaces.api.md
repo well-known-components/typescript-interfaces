@@ -65,7 +65,7 @@ export interface IDatabase {
 // @alpha (undocumented)
 export namespace IHttpServerComponent {
     // (undocumented)
-    export type DefaultContext<Context = {}, Path extends string = string> = Context & {
+    export type DefaultContext<Context = {}, Path extends string = "/"> = Context & {
         request: IRequest;
         query: QueryParams;
         params: IHttpServerComponent.ParseUrlParams<Path>;
@@ -118,7 +118,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<DefaultContext<Context, Path>, Readonly<IResponse>>;
+    export type IRequestHandler<Context = {}, Path extends string = "/"> = IAdapterHandler<DefaultContext<Context, Path>, Readonly<IResponse>>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)

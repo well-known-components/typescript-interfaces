@@ -17,12 +17,12 @@ export namespace IHttpServerComponent {
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
-  export type DefaultContext<Context = {}, Path extends string = string> = Context & {
+  export type DefaultContext<Context = {}, Path extends string = "/"> = Context & {
     request: IRequest
     query: QueryParams
     params: IHttpServerComponent.ParseUrlParams<Path>
   }
-  export type IRequestHandler<Context = {}, Path extends string = string> = IAdapterHandler<
+  export type IRequestHandler<Context = {}, Path extends string = "/"> = IAdapterHandler<
     DefaultContext<Context, Path>,
     Readonly<IResponse>
   >
