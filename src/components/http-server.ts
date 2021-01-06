@@ -2,7 +2,7 @@ import type * as stream from "stream"
 import type * as fetch from "node-fetch"
 import type { IAdapterHandler } from "./base-component"
 import type { ParseUrlParams as _ParseUrlParams } from "typed-url-params"
-import type { URL } from "url"
+import type { UrlWithParsedQuery } from "url"
 
 /**
  * @alpha
@@ -20,8 +20,7 @@ export namespace IHttpServerComponent {
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
   export type DefaultContext<Context = {}> = Context & {
     request: IRequest
-    url: URL
-    queryParameters: QueryParams
+    url: UrlWithParsedQuery
   }
   export type PathAwareContext<Context = {}, Path extends string = string> = Context & {
     params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>
@@ -114,7 +113,7 @@ export namespace IHttpServerComponent {
 /**
  * @alpha
  */
-export interface IHttpServerComponent<Context> {
+export interface IHttpServerComponent<Context extends object> {
   /**
    * Register a route
    */
