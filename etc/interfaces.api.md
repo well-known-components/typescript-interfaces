@@ -142,7 +142,6 @@ export namespace IHttpServerComponent {
     export interface PathAwareHandler<Context> {
         // (undocumented)
         <Path extends string>(
-        context: Context,
         path: Path,
         handler: IHttpServerComponent.IRequestHandler<PathAwareContext<Context, Path>>): void;
     }
@@ -157,9 +156,9 @@ export namespace IHttpServerComponent {
 }
 
 // @alpha (undocumented)
-export interface IHttpServerComponent {
-    use: <Context>(
-    context: Context,
+export interface IHttpServerComponent<Context> {
+    setContext(ctx: Context): void;
+    use: (
     handler: IHttpServerComponent.IRequestHandler<Context>) => void;
 }
 

@@ -96,10 +96,6 @@ export namespace IHttpServerComponent {
   export interface PathAwareHandler<Context> {
     <Path extends string>(
       /**
-       *  context to be passed on to the handlers
-       */
-      context: Context,
-      /**
        * /path/to/:bind
        */
       path: Path,
@@ -118,18 +114,21 @@ export namespace IHttpServerComponent {
 /**
  * @alpha
  */
-export interface IHttpServerComponent {
+export interface IHttpServerComponent<Context> {
   /**
    * Register a route
    */
-  use: <Context>(
-    /**
-     *  context to be passed on to the handlers
-     */
-    context: Context,
+  use: (
     /**
      * adapter code to handle the request
      */
     handler: IHttpServerComponent.IRequestHandler<Context>
   ) => void
+
+  /**
+   * Sets a context to be passed on to the handlers.
+   *
+   * The original context should remain untouched after handler execution.
+   */
+  setContext(ctx: Context): void
 }
