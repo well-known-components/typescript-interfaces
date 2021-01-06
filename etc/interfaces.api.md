@@ -67,8 +67,8 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type DefaultContext<Context = {}> = Context & {
         request: IRequest;
-        query: Record<string, any>;
-        params: Record<string, string | string[]>;
+        query: QueryString;
+        params: UrlParams;
     };
     // @public
     export type HTTPMethod =
@@ -130,9 +130,13 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = ParseUrlParams<State, Memo>;
     // (undocumented)
+    export type QueryString = Record<string, any>;
+    // (undocumented)
     export type StreamResponse = ResponseInit & {
         body: stream.Readable;
     };
+    // (undocumented)
+    export type UrlParams = Record<string, string | string[]>;
 }
 
 // @alpha (undocumented)

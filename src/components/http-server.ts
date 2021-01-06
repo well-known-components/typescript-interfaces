@@ -13,12 +13,14 @@ export namespace IHttpServerComponent {
   export type JsonResponse = ResponseInit & { body: JsonBody }
   export type StreamResponse = ResponseInit & { body: stream.Readable }
 
+  export type QueryString = Record<string, any>
+  export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
   export type DefaultContext<Context = {}> = Context & {
     request: IRequest
-    query: Record<string, any>
-    params: Record<string, string | string[]>
+    query: QueryString
+    params: UrlParams
   }
   export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
@@ -114,7 +116,6 @@ export type IHttpServerComponent = {
     handler: IHttpServerComponent.IRequestHandler<Context & { params: IHttpServerComponent.ParseUrlParams<T> }>
   ) => void
 }
-
 
 // const a: IHttpServerComponent = null!
 
