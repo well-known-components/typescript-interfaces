@@ -13,13 +13,13 @@ export namespace IHttpServerComponent {
   export type JsonResponse = ResponseInit & { body: JsonBody }
   export type StreamResponse = ResponseInit & { body: stream.Readable }
 
-  export type QueryString = Record<string, any>
+  export type QueryParams = Record<string, any>
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
   export type IResponse = JsonResponse | StreamResponse | ResponseInit
   export type DefaultContext<Context = {}> = Context & {
     request: IRequest
-    query: QueryString
+    query: QueryParams
     params: UrlParams
   }
   export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, Readonly<IResponse>>
