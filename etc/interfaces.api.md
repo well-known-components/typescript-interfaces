@@ -120,13 +120,11 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequestHandler<Context = {}> = IMiddlewareAdapterHandler<DefaultContext<Context>, IResponse>;
     // (undocumented)
-    export type IResponse = JsonResponse | StreamResponse | ResponseInit;
+    export type IResponse = ResponseInit & {
+        body?: ResponseBody;
+    };
     // (undocumented)
     export type JsonBody = Record<string, any>;
-    // (undocumented)
-    export type JsonResponse = ResponseInit & {
-        body: JsonBody;
-    };
     // (undocumented)
     export type MethodHandlers<Context> = {
         [key in Lowercase<HTTPMethod>]: PathAwareHandler<Context>;
@@ -147,9 +145,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type QueryParams = Record<string, any>;
     // (undocumented)
-    export type StreamResponse = ResponseInit & {
-        body: stream.Readable;
-    };
+    export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer;
     // (undocumented)
     export type UrlParams = Record<string, string | string[]>;
 }

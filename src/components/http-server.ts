@@ -10,14 +10,13 @@ import type { UrlWithParsedQuery } from "url"
 export namespace IHttpServerComponent {
   // only objects for the time being. Rationale: https://menduz.com/posts/2019.05.07
   export type JsonBody = Record<string, any>
-
-  export type JsonResponse = ResponseInit & { body: JsonBody }
-  export type StreamResponse = ResponseInit & { body: stream.Readable }
+  export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer
 
   export type QueryParams = Record<string, any>
   export type UrlParams = Record<string, string | string[]>
   export type IRequest = fetch.Request
-  export type IResponse = JsonResponse | StreamResponse | ResponseInit
+  export type IResponse = ResponseInit & { body?: ResponseBody /* attachments: [] */ }
+
   export type DefaultContext<Context = {}> = Context & {
     request: IRequest
     url: UrlWithParsedQuery
