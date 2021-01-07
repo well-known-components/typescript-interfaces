@@ -39,3 +39,12 @@ export interface IBaseComponent {
  * @public
  */
 export type IAdapterHandler<Context, ReturnType> = (context: Context) => Promise<ReturnType>
+
+/**
+ * Base interface to normalize adapters that accept middlewares
+ * @public
+ */
+export type IMiddlewareAdapterHandler<Context, ReturnType> = (
+  context: Context,
+  next: () => Promise<ReturnType>
+) => Promise<ReturnType>

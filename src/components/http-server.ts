@@ -1,6 +1,6 @@
 import type * as stream from "stream"
 import type * as fetch from "node-fetch"
-import type { IAdapterHandler } from "./base-component"
+import type { IMiddlewareAdapterHandler } from "./base-component"
 import type { ParseUrlParams as _ParseUrlParams } from "typed-url-params"
 import type { UrlWithParsedQuery } from "url"
 
@@ -25,7 +25,7 @@ export namespace IHttpServerComponent {
   export type PathAwareContext<Context = {}, Path extends string = string> = Context & {
     params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>
   }
-  export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, IResponse>
+  export type IRequestHandler<Context = {}> = IMiddlewareAdapterHandler<DefaultContext<Context>, IResponse>
   export type ParseUrlParams<State extends string, Memo extends Record<string, any> = {}> = _ParseUrlParams<State, Memo>
 
   /**

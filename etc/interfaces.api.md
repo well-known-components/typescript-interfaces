@@ -118,7 +118,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type IRequest = fetch_2.Request;
     // (undocumented)
-    export type IRequestHandler<Context = {}> = IAdapterHandler<DefaultContext<Context>, IResponse>;
+    export type IRequestHandler<Context = {}> = IMiddlewareAdapterHandler<DefaultContext<Context>, IResponse>;
     // (undocumented)
     export type IResponse = JsonResponse | StreamResponse | ResponseInit;
     // (undocumented)
@@ -177,6 +177,9 @@ export namespace ILoggerComponent {
 export type ILoggerComponent = {
     getLogger(loggerName: string): ILoggerComponent.ILogger;
 };
+
+// @public
+export type IMiddlewareAdapterHandler<Context, ReturnType> = (context: Context, next: () => Promise<ReturnType>) => Promise<ReturnType>;
 
 // @beta (undocumented)
 export namespace IRolloutComponent {
