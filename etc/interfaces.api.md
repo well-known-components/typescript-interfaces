@@ -145,7 +145,7 @@ export namespace IHttpServerComponent {
     // (undocumented)
     export type QueryParams = Record<string, any>;
     // (undocumented)
-    export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer;
+    export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer | string;
     // (undocumented)
     export type UrlParams = Record<string, string | string[]>;
 }

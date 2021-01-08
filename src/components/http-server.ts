@@ -10,7 +10,7 @@ import type { UrlWithParsedQuery } from "url"
 export namespace IHttpServerComponent {
   // only objects for the time being. Rationale: https://menduz.com/posts/2019.05.07
   export type JsonBody = Record<string, any>
-  export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer
+  export type ResponseBody = JsonBody | stream.Readable | Uint8Array | Buffer | string
 
   export type QueryParams = Record<string, any>
   export type UrlParams = Record<string, string | string[]>
