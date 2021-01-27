@@ -2,7 +2,6 @@ import type * as stream from "stream"
 import type * as fetch from "node-fetch"
 import type { IMiddlewareAdapterHandler } from "./base-component"
 import type { ParseUrlParams as _ParseUrlParams } from "typed-url-params"
-import type { UrlWithParsedQuery } from "url"
 
 /**
  * @alpha
@@ -19,7 +18,7 @@ export namespace IHttpServerComponent {
 
   export type DefaultContext<Context = {}> = Context & {
     request: IRequest
-    url: UrlWithParsedQuery
+    url: URL
   }
   export type PathAwareContext<Context = {}, Path extends string = string> = Context & {
     params: string extends Path ? any : IHttpServerComponent.ParseUrlParams<Path>
