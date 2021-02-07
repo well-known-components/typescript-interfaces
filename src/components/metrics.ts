@@ -4,11 +4,11 @@
 export namespace IMetricsComponent {
   export type GaugeType = "gauge"
   export type CounterType = "counter"
-  export type HistogramType = "historgram"
+  export type HistogramType = "histogram"
   export type SummaryType = "summary"
   export const GaugeType: GaugeType = "gauge"
   export const CounterType: CounterType = "counter"
-  export const HistogramType: HistogramType = "historgram"
+  export const HistogramType: HistogramType = "histogram"
   export const SummaryType: SummaryType = "summary"
 
   export type GaugeMetricDefinition = {
@@ -99,7 +99,6 @@ export interface IMetricsComponent<K extends string> {
    * Resets all metrics.
    */
   resetAll(): void
-
   /**
    * Gets the current value of a metric
    */
