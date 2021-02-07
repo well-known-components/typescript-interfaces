@@ -173,6 +173,82 @@ export type ILoggerComponent = {
     getLogger(loggerName: string): ILoggerComponent.ILogger;
 };
 
+// @public (undocumented)
+export namespace IMetricsComponent {
+    // (undocumented)
+    export type CounterMetricDefinition = {
+        type: CounterType;
+        help: string;
+        labelNames?: string[] | readonly string[];
+    };
+    // (undocumented)
+    export type CounterType = "counter";
+    // (undocumented)
+    export type ExportedMetricData = {
+        help: string;
+        name: string;
+        type: MetricDefinition["type"];
+        values: any[];
+        aggregator: string;
+    };
+    // (undocumented)
+    export type GaugeMetricDefinition = {
+        type: GaugeType;
+        help: string;
+        labelNames?: string[] | readonly string[];
+    };
+    const // (undocumented)
+    GaugeType: GaugeType;
+    const // (undocumented)
+    CounterType: CounterType;
+    const // (undocumented)
+    HistogramType: HistogramType;
+    const // (undocumented)
+    SummaryType: SummaryType;
+    // (undocumented)
+    export type GaugeType = "gauge";
+    // (undocumented)
+    export type HistogramMetricDefinition = {
+        type: HistogramType;
+        help: string;
+        labelNames?: string[] | readonly string[];
+        buckets?: number[];
+    };
+    // (undocumented)
+    export type HistogramType = "historgram";
+    // (undocumented)
+    export type Labels = Record<string, string | number>;
+    // (undocumented)
+    export type MetricDefinition = GaugeMetricDefinition | CounterMetricDefinition | HistogramMetricDefinition | SummaryMetricDefinition;
+    // (undocumented)
+    export type MetricsRecordDefinition<K extends string> = Record<K, MetricDefinition>;
+    // (undocumented)
+    export type SummaryMetricDefinition = {
+        type: SummaryType;
+        help: string;
+        labelNames?: string[] | readonly string[];
+        percentiles?: number[];
+        maxAgeSeconds?: number;
+        ageBuckets?: number;
+        compressCount?: number;
+    };
+    // (undocumented)
+    export type SummaryType = "summary";
+}
+
+// @public (undocumented)
+export interface IMetricsComponent<K extends string> {
+    decrement(metricName: K, labels?: IMetricsComponent.Labels, value?: number): void;
+    getValue(metricName: K): Promise<IMetricsComponent.ExportedMetricData>;
+    increment(metricName: K, labels?: IMetricsComponent.Labels, value?: number): void;
+    observe(metricName: K, labels: IMetricsComponent.Labels, value: number): void;
+    reset(metricName: K): void;
+    resetAll(): void;
+    startTimer(metricName: K, labels?: IMetricsComponent.Labels): {
+        end: (endLabels?: IMetricsComponent.Labels) => void;
+    };
+}
+
 // @public
 export type IMiddlewareAdapterHandler<Context, ReturnType> = (context: Context, next: () => Promise<ReturnType>) => Promise<ReturnType>;
 
