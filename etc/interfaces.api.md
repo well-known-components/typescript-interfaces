@@ -215,7 +215,7 @@ export namespace IMetricsComponent {
         buckets?: number[];
     };
     // (undocumented)
-    export type HistogramType = "historgram";
+    export type HistogramType = "histogram";
     // (undocumented)
     export type Labels = Record<string, string | number>;
     // (undocumented)
