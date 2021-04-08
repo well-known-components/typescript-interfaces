@@ -178,31 +178,12 @@ export namespace Lifecycle {
     main: (components: Components) => Promise<any>
     initComponents: () => Promise<Components>
   }): Promise<ComponentBasedProgram<Components>> {
-    return asyncTopLevelExceptionHanler(async () => {
-      // pick a componentInitializer
-      const componentInitializer = config.initComponents
-
-      // init ports & components
-      process.stdout.write("<<< Initializing components >>>\n")
-      const components: Components = await componentInitializer()
-
-      // wire adapters
-      process.stdout.write("<<< Wiring app >>>\n")
-      await config.main(components)
-
-      // start components & ports
-      process.stdout.write("<<< Starting components >>>\n")
-      await startComponentsLifecycle(components)
-
-      return {
-        get components() {
-          process.stderr.write("Warning: Usage of program.components is only intended for debuging reasons.\n")
-          return components
-        },
-        async stop(): Promise<void> {
-          await stopAllComponents(components)
-        },
-      }
+    return run({
+      ...config,
+      async main(program) {
+        await config.main(program.components)
+        await program.startComponents()
+      },
     })
   }
 
