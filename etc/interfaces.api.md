@@ -331,10 +331,15 @@ export namespace Lifecycle {
         stop(): Promise<void>;
         readonly components: Components;
     };
-    export function programEntryPoint<Components extends Record<string, any>>(config: {
-        main: (components: Components) => Promise<any>;
+    // (undocumented)
+    export type EntryPointParameters<Components> = ComponentBasedProgram<Components> & {
+        startComponents(): Promise<void>;
+    };
+    export type ProgramConfig<Components> = {
+        main: (program: EntryPointParameters<Components>) => Promise<any>;
         initComponents: () => Promise<Components>;
-    }): Promise<ComponentBasedProgram<Components>>;
+    };
+    export function programEntryPoint<Components extends Record<string, any>>(config: ProgramConfig<Components>): PromiseLike<ComponentBasedProgram<Components>>;
 }
 
 

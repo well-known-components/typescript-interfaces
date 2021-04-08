@@ -1,3 +1,4 @@
+import future from "fp-future"
 import { IBaseComponent } from "../components/base-component"
 
 function stopAllComponents(components: Record<string, IBaseComponent>) {
@@ -24,8 +25,32 @@ function bindStopService(components: Record<string, IBaseComponent>) {
   })
 }
 
+async function allSettled(promises: Array<Promise<any> | PromiseLike<any>>) {
+  let mappedPromises = promises.map((p) => {
+    let r = p.then((value: any) => {
+      return {
+        status: "fulfilled",
+        value,
+      }
+    })
+
+    if ("catch" in p) {
+      r = p.catch((reason) => {
+        return {
+          status: "rejected",
+          reason,
+        }
+      })
+    }
+
+    return r
+  })
+  return Promise.all(mappedPromises)
+}
+
 // gracefully finalizes all the components on SIGTERM
 async function startComponentsLifecycle(components: Record<string, IBaseComponent>): Promise<void> {
+  process.stdout.write("<<< Starting components >>>\n")
   const pending: PromiseLike<any>[] = []
 
   let mutStarted = false
@@ -69,10 +94,9 @@ async function startComponentsLifecycle(components: Record<string, IBaseComponen
     await Promise.all(pending)
     mutStarted = true
   } catch (e) {
-    console.error(e)
     process.stderr.write("<<< Error initializing components. Stopping components and closing application. >>>\n")
-    await stopAllComponents(components)
-    process.exit(1)
+    await allSettled(pending)
+    throw e
   }
 }
 
@@ -109,39 +133,97 @@ export namespace Lifecycle {
     readonly components: Components
   }
 
+  export type EntryPointParameters<Components> = ComponentBasedProgram<Components> & {
+    startComponents(): Promise<void>
+  }
+
+  /**
+   * Program lifecycle configurations
+   */
+  export type ProgramConfig<Components> = {
+    /**
+     * async main(program)\{ .. \} entry point of the application.
+     * It should wire components together i.e. wiring routes to http-servers
+     * and listeners to kafka.
+     *
+     * The main function must also call the program.
+     *
+     * Example:
+     * ```ts
+     * async main(program) {
+     *   const { components, startComponents } = program
+     *   components.server.use(routeHandler)
+     *
+     *   // start all components, including http listener
+     *   await startComponents()
+     * }
+     * ```
+     */
+    main: (program: EntryPointParameters<Components>) => Promise<any>
+
+    /**
+     * initComponents is a function that returns the components to be used by
+     * the app.
+     */
+    initComponents: () => Promise<Components>
+  }
+
   /**
    * Program entry point, this should be the one and only top level
    * expression of your program.
    */
-  export async function programEntryPoint<Components extends Record<string, any>>(config: {
-    main: (components: Components) => Promise<any>
-    initComponents: () => Promise<Components>
-  }): Promise<ComponentBasedProgram<Components>> {
+  export function programEntryPoint<Components extends Record<string, any>>(
+    config: ProgramConfig<Components>
+  ): PromiseLike<ComponentBasedProgram<Components>> {
     return asyncTopLevelExceptionHanler(async () => {
       // pick a componentInitializer
       const componentInitializer = config.initComponents
 
       // init ports & components
       process.stdout.write("<<< Initializing components >>>\n")
-      const components: Components = await componentInitializer()
+      const components: Components = Object.freeze(await componentInitializer())
 
-      // wire adapters
-      process.stdout.write("<<< Wiring app >>>\n")
-      await config.main(components)
+      let componentsStarted: Promise<void> | undefined
 
-      // start components & ports
-      process.stdout.write("<<< Starting components >>>\n")
-      await startComponentsLifecycle(components)
-
-      return {
+      const program: EntryPointParameters<Components> = {
         get components() {
-          process.stderr.write("Warning: Usage of program.components is only intended for debuging reasons.\n")
           return components
         },
         async stop(): Promise<void> {
           await stopAllComponents(components)
         },
+        async startComponents() {
+          if (!componentsStarted) {
+            // start components & ports
+            componentsStarted = startComponentsLifecycle(components)
+          } else {
+            process.stderr.write("Warning: startComponents must be called once\n")
+          }
+
+          return componentsStarted
+        },
       }
+
+      try {
+        // wire adapters
+        process.stdout.write("<<< Wiring app >>>\n")
+        await config.main(program)
+
+        if (!componentsStarted) {
+          process.stderr.write("Warning: startComponents was not called inside programEntryPoint.main function\n")
+        } else {
+          await componentsStarted
+        }
+      } catch (e) {
+        // gracefully stop all components
+        await program.stop()
+
+        // the following throw is handled by asyncTopLevelExceptionHanler
+        // exiting the program
+        throw e
+      }
+
+      return program
     })
   }
 }

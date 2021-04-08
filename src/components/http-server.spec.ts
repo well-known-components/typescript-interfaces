@@ -13,7 +13,7 @@ it("case 1", () => {
   testAssignability<"/:a">(tx1)
 
   function testAssignability<path extends string>(x: http.PathAwareContext<{}, path>) {}
-  function testArray(x: string[]) {}
+  function testArray(x: string | string[]) {}
 })
 
 it("case 2", () => {
