@@ -171,8 +171,46 @@ export namespace Lifecycle {
   /**
    * Program entry point, this should be the one and only top level
    * expression of your program.
+   *
+   * @deprecated Lifecycle.programEntryPoint is deprecated, please use Lifecycle.run()
    */
-  export function programEntryPoint<Components extends Record<string, any>>(
+  export async function programEntryPoint<Components extends Record<string, any>>(config: {
+    main: (components: Components) => Promise<any>
+    initComponents: () => Promise<Components>
+  }): Promise<ComponentBasedProgram<Components>> {
+    return asyncTopLevelExceptionHanler(async () => {
+      // pick a componentInitializer
+      const componentInitializer = config.initComponents
+
+      // init ports & components
+      process.stdout.write("<<< Initializing components >>>\n")
+      const components: Components = await componentInitializer()
+
+      // wire adapters
+      process.stdout.write("<<< Wiring app >>>\n")
+      await config.main(components)
+
+      // start components & ports
+      process.stdout.write("<<< Starting components >>>\n")
+      await startComponentsLifecycle(components)
+
+      return {
+        get components() {
+          process.stderr.write("Warning: Usage of program.components is only intended for debuging reasons.\n")
+          return components
+        },
+        async stop(): Promise<void> {
+          await stopAllComponents(components)
+        },
+      }
+    })
+  }
+
+  /**
+   * Program entry point, this should be the one and only top level
+   * expression of your program.
+   */
+  export function run<Components extends Record<string, any>>(
     config: ProgramConfig<Components>
   ): PromiseLike<ComponentBasedProgram<Components>> {
     return asyncTopLevelExceptionHanler(async () => {

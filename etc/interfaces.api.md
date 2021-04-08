@@ -339,7 +339,12 @@ export namespace Lifecycle {
         main: (program: EntryPointParameters<Components>) => Promise<any>;
         initComponents: () => Promise<Components>;
     };
-    export function programEntryPoint<Components extends Record<string, any>>(config: ProgramConfig<Components>): PromiseLike<ComponentBasedProgram<Components>>;
+    // @deprecated
+    export function programEntryPoint<Components extends Record<string, any>>(config: {
+        main: (components: Components) => Promise<any>;
+        initComponents: () => Promise<Components>;
+    }): Promise<ComponentBasedProgram<Components>>;
+    export function run<Components extends Record<string, any>>(config: ProgramConfig<Components>): PromiseLike<ComponentBasedProgram<Components>>;
 }
 
 
