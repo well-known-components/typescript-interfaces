@@ -181,8 +181,9 @@ export namespace Lifecycle {
     return run({
       ...config,
       async main(program) {
-        await config.main(program.components)
+        const r = await config.main(program.components)
         await program.startComponents()
+        return r
       },
     })
   }
