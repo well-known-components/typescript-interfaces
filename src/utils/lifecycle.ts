@@ -1,11 +1,10 @@
-import future from "fp-future"
 import { IBaseComponent } from "../components/base-component"
 
 function stopAllComponents(components: Record<string, IBaseComponent>) {
   const pending: PromiseLike<any>[] = []
   for (let c in components) {
     const component = components[c]
-    if (component.stop) {
+    if (component.stop && typeof component.stop == 'function') {
       pending.push(component.stop())
     }
   }
@@ -70,7 +69,7 @@ async function startComponentsLifecycle(components: Record<string, IBaseComponen
 
   for (let c in components) {
     const component = components[c]
-    if (component.start) {
+    if (component.start && typeof component.start == 'function') {
       const awaitable = component.start(immutableStartOptions)
       if (awaitable && typeof awaitable == "object" && "then" in awaitable) {
         pending.push(awaitable)
