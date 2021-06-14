@@ -1,0 +1,31 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: "@microsoft/api-extractor"
+    versions:
+    - 7.13.1
+    - 7.13.2
+    - 7.13.3
+    - 7.13.4
+    - 7.13.5
+  - dependency-name: "@types/node-fetch"
+    versions:
+    - 2.5.10
+    - 2.5.8
+    - 2.5.9
+  - dependency-name: typescript
+    versions:
+    - 4.1.4
+    - 4.1.5
+    - 4.2.2
+    - 4.2.3
+    - 4.2.4
+  - dependency-name: "@types/node"
+    versions:
+    - 14.14.25
+    - 14.14.26
